@@ -23,6 +23,16 @@ class TradeType(str, enum.Enum):
     OTHER = "other"
 
 
+class DocumentType(str, enum.Enum):
+    """Types of verification documents"""
+    BUSINESS_LICENSE = "business_license"
+    HANDWERKSKAMMER_CERTIFICATE = "handwerkskammer_certificate"
+    INSURANCE_CERTIFICATE = "insurance_certificate"
+    ID_CARD = "id_card"
+    TAX_CERTIFICATE = "tax_certificate"
+    OTHER = "other"
+
+
 class CraftsmanProfile(Base):
     """Craftsman profile with business information"""
     __tablename__ = "craftsman_profiles"
@@ -38,6 +48,7 @@ class CraftsmanProfile(Base):
 
     # Verification
     is_verified = Column(Boolean, default=False)
+    verified_at = Column(DateTime, nullable=True)
     handwerkskammer_number = Column(String(100), nullable=True)  # Chamber of crafts registration
     tax_id = Column(String(100), nullable=True)
 
@@ -63,6 +74,7 @@ class CraftsmanProfile(Base):
     trades = relationship("Trade", back_populates="craftsman", cascade="all, delete-orphan")
     service_areas = relationship("ServiceArea", back_populates="craftsman", cascade="all, delete-orphan")
     portfolio = relationship("Portfolio", back_populates="craftsman", cascade="all, delete-orphan")
+    documents = relationship("Document", back_populates="craftsman", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<CraftsmanProfile {self.company_name or self.user.full_name}>"
@@ -121,3 +133,31 @@ class Portfolio(Base):
 
     def __repr__(self):
         return f"<Portfolio {self.title}>"
+
+
+class Document(Base):
+    """Verification documents uploaded by craftsmen"""
+    __tablename__ = "documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    craftsman_id = Column(Integer, ForeignKey("craftsman_profiles.id"), nullable=False)
+
+    document_type = Column(Enum(DocumentType), nullable=False)
+    filename = Column(String(255), nullable=False)
+    file_path = Column(String(512), nullable=False)
+    file_size = Column(Integer, nullable=False)  # in bytes
+    mime_type = Column(String(100), nullable=False)
+
+    # Verification status
+    verified = Column(Boolean, default=False)
+    verified_at = Column(DateTime, nullable=True)
+    verified_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # Admin who verified
+    notes = Column(Text, nullable=True)  # Admin notes
+
+    uploaded_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationships
+    craftsman = relationship("CraftsmanProfile", back_populates="documents")
+
+    def __repr__(self):
+        return f"<Document {self.document_type.value} - {self.filename}>"

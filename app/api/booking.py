@@ -10,6 +10,8 @@ from app.models.booking import Booking, BookingStatus
 from app.models.craftsman import CraftsmanProfile
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
 from app.api.dependencies import get_current_active_user
+from app.services.email_service import EmailService
+from app.services.websocket_manager import notify_booking_created, notify_booking_accepted, notify_booking_status_change
 
 router = APIRouter(prefix="/api/bookings", tags=["Bookings"])
 
@@ -76,6 +78,35 @@ async def create_booking(
     db.add(booking)
     await db.commit()
     await db.refresh(booking)
+
+    # Send email notification to craftsman
+    try:
+        await EmailService.send_booking_created_email(
+            craftsman_email=craftsman.email,
+            craftsman_name=craftsman.full_name,
+            homeowner_name=current_user.full_name,
+            booking_title=booking.title,
+            booking_id=booking.id,
+            requested_date=booking.requested_date.strftime("%d.%m.%Y %H:%M") if booking.requested_date else "TBD"
+        )
+    except Exception as e:
+        print(f"Error sending booking created email: {e}")
+
+    # Send WebSocket notification to craftsman
+    try:
+        await notify_booking_created(
+            homeowner_id=current_user.id,
+            craftsman_id=craftsman.id,
+            booking_data={
+                "id": booking.id,
+                "title": booking.title,
+                "homeowner_name": current_user.full_name,
+                "requested_date": booking.requested_date.isoformat() if booking.requested_date else None,
+                "estimated_cost": booking.estimated_cost
+            }
+        )
+    except Exception as e:
+        print(f"Error sending WebSocket notification: {e}")
 
     return BookingResponse.from_orm(booking)
 
@@ -171,6 +202,41 @@ async def accept_booking(
 
     await db.commit()
     await db.refresh(booking)
+
+    # Send email notification to homeowner
+    try:
+        result = await db.execute(
+            select(User).where(User.id == booking.homeowner_id)
+        )
+        homeowner = result.scalar_one_or_none()
+
+        if homeowner:
+            await EmailService.send_booking_accepted_email(
+                homeowner_email=homeowner.email,
+                homeowner_name=homeowner.full_name,
+                craftsman_name=current_user.full_name,
+                booking_title=booking.title,
+                booking_id=booking.id,
+                scheduled_date=booking.scheduled_date.strftime("%d.%m.%Y %H:%M")
+            )
+    except Exception as e:
+        print(f"Error sending booking accepted email: {e}")
+
+    # Send WebSocket notification to homeowner
+    try:
+        await notify_booking_accepted(
+            homeowner_id=booking.homeowner_id,
+            craftsman_id=current_user.id,
+            booking_data={
+                "id": booking.id,
+                "title": booking.title,
+                "craftsman_name": current_user.full_name,
+                "scheduled_date": booking.scheduled_date.isoformat(),
+                "status": booking.status.value
+            }
+        )
+    except Exception as e:
+        print(f"Error sending WebSocket notification: {e}")
 
     return BookingResponse.from_orm(booking)
 
@@ -299,6 +365,40 @@ async def complete_booking(
 
     await db.commit()
     await db.refresh(booking)
+
+    # Send email notification to homeowner
+    try:
+        result = await db.execute(
+            select(User).where(User.id == booking.homeowner_id)
+        )
+        homeowner = result.scalar_one_or_none()
+
+        if homeowner:
+            await EmailService.send_booking_completed_email(
+                homeowner_email=homeowner.email,
+                homeowner_name=homeowner.full_name,
+                craftsman_name=current_user.full_name,
+                booking_title=booking.title,
+                booking_id=booking.id,
+                final_cost=booking.final_cost
+            )
+    except Exception as e:
+        print(f"Error sending booking completed email: {e}")
+
+    # Send WebSocket notification to both users
+    try:
+        await notify_booking_status_change(
+            user_ids={booking.homeowner_id, booking.craftsman_id},
+            booking_data={
+                "id": booking.id,
+                "title": booking.title,
+                "final_cost": booking.final_cost,
+                "craftsman_name": current_user.full_name
+            },
+            status="completed"
+        )
+    except Exception as e:
+        print(f"Error sending WebSocket notification: {e}")
 
     return BookingResponse.from_orm(booking)
 

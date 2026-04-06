@@ -21,6 +21,8 @@ from app.schemas.payment import (
 )
 from app.api.dependencies import get_current_active_user
 from app.services.stripe_service import StripeService
+from app.services.email_service import EmailService
+from app.services.websocket_manager import notify_payment_confirmed
 from app.core.config import settings
 
 router = APIRouter(prefix="/api/payments", tags=["Payments"])
@@ -276,6 +278,34 @@ async def confirm_payment(
         booking = result.scalar_one_or_none()
         if booking:
             booking.status = BookingStatus.PAID
+
+            # Send payment confirmation email
+            try:
+                result = await db.execute(
+                    select(User).where(User.id == booking.homeowner_id)
+                )
+                homeowner = result.scalar_one_or_none()
+
+                if homeowner:
+                    await EmailService.send_payment_confirmation_email(
+                        homeowner_email=homeowner.email,
+                        homeowner_name=homeowner.full_name,
+                        booking_title=booking.title,
+                        amount=payment.amount,
+                        booking_id=booking.id
+                    )
+            except Exception as e:
+                print(f"Error sending payment confirmation email: {e}")
+
+            # Send WebSocket notification to homeowner
+            try:
+                await notify_payment_confirmed(
+                    homeowner_id=booking.homeowner_id,
+                    booking_id=booking.id,
+                    amount=payment.amount
+                )
+            except Exception as e:
+                print(f"Error sending WebSocket notification: {e}")
 
         await db.commit()
         await db.refresh(payment)

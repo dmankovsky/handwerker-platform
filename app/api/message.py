@@ -10,6 +10,7 @@ from app.models.booking import Booking
 from app.models.message import Message, MessageThread
 from app.schemas.message import MessageCreate, MessageResponse, MessageThreadResponse
 from app.api.dependencies import get_current_active_user
+from app.services.websocket_manager import notify_new_message
 
 router = APIRouter(prefix="/api/messages", tags=["Messages"])
 
@@ -65,6 +66,23 @@ async def send_message(
     db.add(message)
     await db.commit()
     await db.refresh(message)
+
+    # Send WebSocket notification to recipient
+    try:
+        await notify_new_message(
+            sender_id=current_user.id,
+            recipient_id=recipient_id,
+            message_data={
+                "id": message.id,
+                "thread_id": thread.id,
+                "booking_id": booking.id,
+                "sender_name": current_user.full_name,
+                "content": message.content,
+                "created_at": message.created_at.isoformat()
+            }
+        )
+    except Exception as e:
+        print(f"Error sending WebSocket notification: {e}")
 
     return MessageResponse.from_orm(message)
 

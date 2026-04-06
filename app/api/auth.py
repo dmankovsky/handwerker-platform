@@ -8,6 +8,7 @@ from app.core.security import verify_password, get_password_hash, create_access_
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token, UserLogin
 from app.api.dependencies import get_current_active_user
+from app.services.email_service import EmailService
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -48,6 +49,16 @@ async def register(
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+
+    # Send welcome email
+    try:
+        await EmailService.send_welcome_email(
+            user_email=new_user.email,
+            user_name=new_user.full_name,
+            user_role=new_user.role.value
+        )
+    except Exception as e:
+        print(f"Error sending welcome email: {e}")
 
     # Create access token
     access_token = create_access_token(

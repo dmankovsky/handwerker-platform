@@ -15,6 +15,8 @@ from app.schemas.verification import (
     VerificationStatusResponse,
 )
 from app.api.dependencies import get_current_active_user
+from app.services.email_service import EmailService
+from app.services.websocket_manager import notify_verification_approved
 from app.core.config import settings
 
 router = APIRouter(prefix="/api/verification", tags=["Verification"])
@@ -352,8 +354,32 @@ async def verify_document(
         )
         profile = result.scalar_one_or_none()
         if profile:
+            was_not_verified = not profile.is_verified
             profile.is_verified = True
             profile.verified_at = datetime.utcnow()
+
+            # Send verification approved email
+            if was_not_verified:
+                try:
+                    result = await db.execute(
+                        select(User).where(User.id == profile.user_id)
+                    )
+                    craftsman = result.scalar_one_or_none()
+
+                    if craftsman:
+                        await EmailService.send_verification_approved_email(
+                            craftsman_email=craftsman.email,
+                            craftsman_name=craftsman.full_name,
+                            company_name=profile.company_name
+                        )
+
+                        # Send WebSocket notification
+                        await notify_verification_approved(
+                            craftsman_id=craftsman.id,
+                            profile_id=profile.id
+                        )
+                except Exception as e:
+                    print(f"Error sending verification approved email: {e}")
 
     await db.commit()
     await db.refresh(document)

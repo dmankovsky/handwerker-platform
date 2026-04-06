@@ -10,6 +10,8 @@ from app.models.review import Review
 from app.models.craftsman import CraftsmanProfile
 from app.schemas.review import ReviewCreate, ReviewUpdate, ReviewResponse, ReviewResponseCreate
 from app.api.dependencies import get_current_active_user
+from app.services.email_service import EmailService
+from app.services.websocket_manager import notify_review_received
 
 router = APIRouter(prefix="/api/reviews", tags=["Reviews"])
 
@@ -101,6 +103,41 @@ async def create_review(
 
     await db.commit()
     await db.refresh(review)
+
+    # Send email notification to craftsman
+    try:
+        result = await db.execute(
+            select(User).where(User.id == booking.craftsman_id)
+        )
+        craftsman = result.scalar_one_or_none()
+
+        if craftsman:
+            await EmailService.send_review_received_email(
+                craftsman_email=craftsman.email,
+                craftsman_name=craftsman.full_name,
+                homeowner_name=current_user.full_name,
+                rating=review_data.rating,
+                booking_title=booking.title,
+                review_id=review.id
+            )
+    except Exception as e:
+        print(f"Error sending review received email: {e}")
+
+    # Send WebSocket notification to craftsman
+    try:
+        await notify_review_received(
+            craftsman_id=booking.craftsman_id,
+            review_data={
+                "id": review.id,
+                "booking_id": booking.id,
+                "booking_title": booking.title,
+                "homeowner_name": current_user.full_name,
+                "rating": review_data.rating,
+                "comment": review_data.comment
+            }
+        )
+    except Exception as e:
+        print(f"Error sending WebSocket notification: {e}")
 
     return ReviewResponse.from_orm(review)
 

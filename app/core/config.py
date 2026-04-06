@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     API_PORT: int = 8000
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # Authentication
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days
+
     # Email
     SMTP_HOST: str
     SMTP_PORT: int = 587

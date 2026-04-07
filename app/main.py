@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import auth, craftsman, booking, review, message, payment, verification, websocket
+from app.api import auth, craftsman, booking, review, message, payment, verification, websocket, i18n
 
 app = FastAPI(
     title="Handwerker Platform API",
@@ -29,6 +29,7 @@ app.include_router(message.router)
 app.include_router(payment.router)
 app.include_router(verification.router)
 app.include_router(websocket.router)
+app.include_router(i18n.router)
 
 
 @app.get("/")

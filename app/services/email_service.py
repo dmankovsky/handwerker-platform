@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from typing import List, Optional
 from jinja2 import Template
 from app.core.config import settings
+from app.services.i18n_service import t
 
 
 class EmailService:
@@ -65,37 +66,38 @@ class EmailService:
         homeowner_name: str,
         booking_title: str,
         booking_id: int,
-        requested_date: str
+        requested_date: str,
+        language: str = "de"
     ):
         """Send email to craftsman when new booking is created"""
-        subject = f"New Booking Request: {booking_title}"
+        subject = t("email.booking_created_subject", language, title=booking_title)
 
         html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <h2 style="color: #2563eb;">New Booking Request</h2>
-            <p>Hello {craftsman_name},</p>
-            <p>You have received a new booking request from <strong>{homeowner_name}</strong>.</p>
+            <h2 style="color: #2563eb;">{t("notifications.booking_created_title", language)}</h2>
+            <p>{t("common.hello", language)} {craftsman_name},</p>
+            <p>{t("notifications.booking_created_message", language, homeowner_name=homeowner_name)}</p>
 
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #1f2937;">Booking Details</h3>
-                <p><strong>Job:</strong> {booking_title}</p>
-                <p><strong>Requested Date:</strong> {requested_date}</p>
-                <p><strong>Booking ID:</strong> #{booking_id}</p>
+                <h3 style="margin-top: 0; color: #1f2937;">{t("booking.booking_details", language)}</h3>
+                <p><strong>{t("booking.job_title", language)}:</strong> {booking_title}</p>
+                <p><strong>{t("booking.requested_date", language)}:</strong> {requested_date}</p>
+                <p><strong>ID:</strong> #{booking_id}</p>
             </div>
 
-            <p>Please log in to your account to review and respond to this booking request.</p>
+            <p>{t("email.login_to_review", language, lang=language)}</p>
 
             <a href="{settings.FRONTEND_URL}/bookings/{booking_id}"
                style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px;
                       text-decoration: none; border-radius: 6px; margin: 20px 0;">
-                View Booking
+                {t("email.view_booking", language)}
             </a>
 
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             <p style="color: #6b7280; font-size: 14px;">
-                This is an automated notification from Handwerker Platform.<br>
-                If you have any questions, please contact our support team.
+                {t("email.automated_notification", language)}<br>
+                {t("email.contact_support_help", language, lang=language)}
             </p>
         </body>
         </html>
@@ -110,37 +112,38 @@ class EmailService:
         craftsman_name: str,
         booking_title: str,
         booking_id: int,
-        scheduled_date: str
+        scheduled_date: str,
+        language: str = "de"
     ):
         """Send email to homeowner when booking is accepted"""
-        subject = f"Booking Accepted: {booking_title}"
+        subject = t("email.booking_accepted_subject", language, title=booking_title)
 
         html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <h2 style="color: #059669;">Booking Accepted!</h2>
-            <p>Hello {homeowner_name},</p>
-            <p>Great news! <strong>{craftsman_name}</strong> has accepted your booking request.</p>
+            <h2 style="color: #059669;">{t("notifications.booking_accepted_title", language)}</h2>
+            <p>{t("common.hello", language)} {homeowner_name},</p>
+            <p>{t("email.great_news", language)} <strong>{craftsman_name}</strong> {t("email.has_accepted", language)}</p>
 
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #1f2937;">Booking Details</h3>
-                <p><strong>Job:</strong> {booking_title}</p>
-                <p><strong>Scheduled Date:</strong> {scheduled_date}</p>
-                <p><strong>Craftsman:</strong> {craftsman_name}</p>
-                <p><strong>Booking ID:</strong> #{booking_id}</p>
+                <h3 style="margin-top: 0; color: #1f2937;">{t("booking.booking_details", language)}</h3>
+                <p><strong>{t("booking.job_title", language)}:</strong> {booking_title}</p>
+                <p><strong>{t("booking.scheduled_date", language)}:</strong> {scheduled_date}</p>
+                <p><strong>{t("craftsman.profile", language)}:</strong> {craftsman_name}</p>
+                <p><strong>ID:</strong> #{booking_id}</p>
             </div>
 
-            <p>Please proceed with payment to confirm the booking.</p>
+            <p>{t("email.proceed_with_payment", language)}</p>
 
             <a href="{settings.FRONTEND_URL}/bookings/{booking_id}"
                style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px;
                       text-decoration: none; border-radius: 6px; margin: 20px 0;">
-                View Booking & Pay
+                {t("email.view_booking_and_pay", language)}
             </a>
 
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             <p style="color: #6b7280; font-size: 14px;">
-                This is an automated notification from Handwerker Platform.
+                {t("email.automated_notification", language)}
             </p>
         </body>
         </html>
@@ -155,36 +158,37 @@ class EmailService:
         craftsman_name: str,
         booking_title: str,
         booking_id: int,
-        final_cost: float
+        final_cost: float,
+        language: str = "de"
     ):
         """Send email to homeowner when booking is completed"""
-        subject = f"Job Completed: {booking_title}"
+        subject = t("email.booking_completed_subject", language, title=booking_title)
 
         html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <h2 style="color: #059669;">Job Completed!</h2>
-            <p>Hello {homeowner_name},</p>
-            <p><strong>{craftsman_name}</strong> has marked your job as completed.</p>
+            <h2 style="color: #059669;">{t("notifications.booking_completed_title", language)}</h2>
+            <p>{t("common.hello", language)} {homeowner_name},</p>
+            <p><strong>{craftsman_name}</strong> {t("email.has_completed", language)}</p>
 
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #1f2937;">Booking Summary</h3>
-                <p><strong>Job:</strong> {booking_title}</p>
-                <p><strong>Final Cost:</strong> €{final_cost:.2f}</p>
-                <p><strong>Booking ID:</strong> #{booking_id}</p>
+                <h3 style="margin-top: 0; color: #1f2937;">{t("booking.booking_details", language)}</h3>
+                <p><strong>{t("booking.job_title", language)}:</strong> {booking_title}</p>
+                <p><strong>{t("booking.final_cost", language)}:</strong> €{final_cost:.2f}</p>
+                <p><strong>ID:</strong> #{booking_id}</p>
             </div>
 
-            <p>We hope you're satisfied with the work! Please take a moment to leave a review.</p>
+            <p>{t("email.hope_satisfied", language)}</p>
 
             <a href="{settings.FRONTEND_URL}/bookings/{booking_id}/review"
                style="display: inline-block; background-color: #f59e0b; color: white; padding: 12px 24px;
                       text-decoration: none; border-radius: 6px; margin: 20px 0;">
-                Leave a Review
+                {t("email.leave_review", language)}
             </a>
 
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             <p style="color: #6b7280; font-size: 14px;">
-                This is an automated notification from Handwerker Platform.
+                {t("email.automated_notification", language)}
             </p>
         </body>
         </html>
@@ -198,36 +202,37 @@ class EmailService:
         homeowner_name: str,
         booking_title: str,
         amount: float,
-        booking_id: int
+        booking_id: int,
+        language: str = "de"
     ):
         """Send payment confirmation email"""
-        subject = f"Payment Confirmed: {booking_title}"
+        subject = t("email.payment_confirmed_subject", language, title=booking_title)
 
         html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <h2 style="color: #059669;">Payment Confirmed</h2>
-            <p>Hello {homeowner_name},</p>
-            <p>Your payment has been successfully processed.</p>
+            <h2 style="color: #059669;">{t("notifications.payment_confirmed_title", language)}</h2>
+            <p>{t("common.hello", language)} {homeowner_name},</p>
+            <p>{t("email.payment_processed", language)}</p>
 
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #1f2937;">Payment Details</h3>
-                <p><strong>Job:</strong> {booking_title}</p>
-                <p><strong>Amount Paid:</strong> €{amount:.2f}</p>
-                <p><strong>Booking ID:</strong> #{booking_id}</p>
+                <h3 style="margin-top: 0; color: #1f2937;">{t("payment.payment", language)}</h3>
+                <p><strong>{t("booking.job_title", language)}:</strong> {booking_title}</p>
+                <p><strong>{t("payment.amount", language)}:</strong> €{amount:.2f}</p>
+                <p><strong>ID:</strong> #{booking_id}</p>
             </div>
 
-            <p>The funds are held securely and will be released to the craftsman upon job completion.</p>
+            <p>{t("email.funds_held_securely", language)}</p>
 
             <a href="{settings.FRONTEND_URL}/bookings/{booking_id}"
                style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px;
                       text-decoration: none; border-radius: 6px; margin: 20px 0;">
-                View Booking
+                {t("email.view_booking", language)}
             </a>
 
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             <p style="color: #6b7280; font-size: 14px;">
-                This is an automated notification from Handwerker Platform.
+                {t("email.automated_notification", language)}
             </p>
         </body>
         </html>
@@ -242,36 +247,37 @@ class EmailService:
         homeowner_name: str,
         rating: float,
         booking_title: str,
-        review_id: int
+        review_id: int,
+        language: str = "de"
     ):
         """Send email to craftsman when they receive a review"""
-        subject = f"New Review Received: {rating}⭐"
+        subject = t("email.review_received_subject", language, rating=rating)
 
         html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <h2 style="color: #f59e0b;">New Review Received!</h2>
-            <p>Hello {craftsman_name},</p>
-            <p><strong>{homeowner_name}</strong> has left a review for your work on "{booking_title}".</p>
+            <h2 style="color: #f59e0b;">{t("notifications.review_received_title", language)}</h2>
+            <p>{t("common.hello", language)} {craftsman_name},</p>
+            <p><strong>{homeowner_name}</strong> {t("email.has_left_review", language, booking_title=booking_title)}</p>
 
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #1f2937;">Rating</h3>
+                <h3 style="margin-top: 0; color: #1f2937;">{t("review.rating", language)}</h3>
                 <p style="font-size: 24px; color: #f59e0b; margin: 10px 0;">
                     {"⭐" * int(rating)} {rating}/5.0
                 </p>
             </div>
 
-            <p>Log in to view the full review and respond to your customer.</p>
+            <p>{t("email.view_full_review", language)}</p>
 
             <a href="{settings.FRONTEND_URL}/reviews/{review_id}"
                style="display: inline-block; background-color: #f59e0b; color: white; padding: 12px 24px;
                       text-decoration: none; border-radius: 6px; margin: 20px 0;">
-                View Review
+                {t("email.view_review", language)}
             </a>
 
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             <p style="color: #6b7280; font-size: 14px;">
-                This is an automated notification from Handwerker Platform.
+                {t("email.automated_notification", language)}
             </p>
         </body>
         </html>
@@ -283,44 +289,45 @@ class EmailService:
     async def send_welcome_email(
         user_email: str,
         user_name: str,
-        user_role: str
+        user_role: str,
+        language: str = "de"
     ):
         """Send welcome email to new users"""
-        subject = "Welcome to Handwerker Platform!"
+        subject = t("email.welcome_subject", language)
 
         if user_role == "homeowner":
-            role_specific = """
-            <p>As a homeowner, you can:</p>
+            role_specific = f"""
+            <p>{t("email.as_homeowner", language)}</p>
             <ul>
-                <li>Search for verified craftsmen in your area</li>
-                <li>Book services online with transparent pricing</li>
-                <li>Track job progress in real-time</li>
-                <li>Pay securely through our platform</li>
-                <li>Rate and review craftsmen after job completion</li>
+                <li>{t("email.find_verified_craftsmen", language)}</li>
+                <li>{t("email.book_services_online", language)}</li>
+                <li>{t("email.track_job_progress", language)}</li>
+                <li>{t("email.pay_securely", language)}</li>
+                <li>{t("email.rate_and_review", language)}</li>
             </ul>
             """
-            cta_text = "Find Craftsmen"
+            cta_text = t("email.find_craftsmen_cta", language)
             cta_link = f"{settings.FRONTEND_URL}/search"
         else:
-            role_specific = """
-            <p>As a craftsman, you can:</p>
+            role_specific = f"""
+            <p>{t("email.as_craftsman", language)}</p>
             <ul>
-                <li>Create your professional profile</li>
-                <li>Receive booking requests from homeowners</li>
-                <li>Manage your schedule and bookings</li>
-                <li>Get paid automatically after job completion</li>
-                <li>Build your reputation with customer reviews</li>
+                <li>{t("email.create_profile", language)}</li>
+                <li>{t("email.receive_booking_requests", language)}</li>
+                <li>{t("email.manage_schedule", language)}</li>
+                <li>{t("email.get_paid_automatically", language)}</li>
+                <li>{t("email.build_reputation", language)}</li>
             </ul>
             """
-            cta_text = "Complete Your Profile"
+            cta_text = t("email.complete_profile", language)
             cta_link = f"{settings.FRONTEND_URL}/profile"
 
         html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <h1 style="color: #2563eb;">Welcome to Handwerker Platform!</h1>
-            <p>Hello {user_name},</p>
-            <p>Thank you for joining Handwerker Platform - Germany's trusted marketplace for home services.</p>
+            <h1 style="color: #2563eb;">{subject}</h1>
+            <p>{t("common.hello", language)} {user_name},</p>
+            <p>{t("email.thank_you_joining", language)}</p>
 
             {role_specific}
 
@@ -332,8 +339,8 @@ class EmailService:
 
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             <p style="color: #6b7280; font-size: 14px;">
-                Need help getting started? Visit our <a href="{settings.FRONTEND_URL}/help">Help Center</a><br>
-                or contact us at support@handwerker-platform.de
+                {t("email.need_help", language)} <a href="{settings.FRONTEND_URL}/help">{t("email.help_center_link", language)}</a><br>
+                {t("email.or_contact", language)} support@handwerker-platform.de
             </p>
         </body>
         </html>
@@ -345,46 +352,47 @@ class EmailService:
     async def send_verification_approved_email(
         craftsman_email: str,
         craftsman_name: str,
-        company_name: Optional[str]
+        company_name: Optional[str],
+        language: str = "de"
     ):
         """Send email when craftsman verification is approved"""
-        subject = "Verification Approved - You're Now a Verified Craftsman!"
+        subject = t("email.verification_approved_subject", language)
 
         display_name = company_name or craftsman_name
 
         html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <h2 style="color: #059669;">Congratulations! You're Verified! ✓</h2>
-            <p>Hello {craftsman_name},</p>
-            <p>Great news! Your documents have been reviewed and approved.</p>
+            <h2 style="color: #059669;">{t("notifications.verification_approved_title", language)} ✓</h2>
+            <p>{t("common.hello", language)} {craftsman_name},</p>
+            <p>{t("email.great_news", language)}</p>
 
             <div style="background-color: #d1fae5; padding: 20px; border-radius: 8px; border-left: 4px solid #059669; margin: 20px 0;">
                 <h3 style="margin-top: 0; color: #065f46;">
-                    <strong>{display_name}</strong> is now a Verified Craftsman
+                    <strong>{display_name}</strong> {t("email.now_verified", language)}
                 </h3>
                 <p style="margin-bottom: 0;">
-                    Your profile now displays a verified badge, giving customers confidence in your services.
+                    {t("email.verified_badge_info", language)}
                 </p>
             </div>
 
-            <p><strong>Benefits of being verified:</strong></p>
+            <p><strong>{t("email.benefits_verified", language)}</strong></p>
             <ul>
-                <li>Increased visibility in search results</li>
-                <li>Verified badge on your profile</li>
-                <li>Higher customer trust and booking rates</li>
-                <li>Access to premium features</li>
+                <li>{t("email.increased_visibility", language)}</li>
+                <li>{t("email.verified_badge", language)}</li>
+                <li>{t("email.higher_trust", language)}</li>
+                <li>{t("email.premium_features", language)}</li>
             </ul>
 
             <a href="{settings.FRONTEND_URL}/profile"
                style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px;
                       text-decoration: none; border-radius: 6px; margin: 20px 0;">
-                View Your Profile
+                {t("email.view_profile", language)}
             </a>
 
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             <p style="color: #6b7280; font-size: 14px;">
-                This is an automated notification from Handwerker Platform.
+                {t("email.automated_notification", language)}
             </p>
         </body>
         </html>

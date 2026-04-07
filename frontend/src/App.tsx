@@ -3,16 +3,10 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/Layout';
-import { Home } from '@/pages/Home';
+import { LoadingPage } from '@/components/common';
+import { Home, Login, Register } from '@/pages';
 
 // Placeholder components for routes we'll implement next
-function Login() {
-  return <div>Login Page - Coming Soon</div>;
-}
-
-function Register() {
-  return <div>Register Page - Coming Soon</div>;
-}
 
 function Search() {
   return <div>Search Craftsmen - Coming Soon</div>;
@@ -44,7 +38,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="text-center py-16">Loading...</div>;
+    return <LoadingPage />;
   }
 
   if (!isAuthenticated) {
@@ -59,7 +53,7 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="text-center py-16">Loading...</div>;
+    return <LoadingPage />;
   }
 
   if (isAuthenticated) {

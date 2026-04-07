@@ -338,6 +338,20 @@ export function BookingDetail() {
                   <span className="font-medium">#{booking.id}</span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-gray-600">Payment Status:</span>
+                  <span className={`font-medium ${
+                    booking.payment_status === 'completed' ? 'text-green-600' :
+                    booking.payment_status === 'pending' ? 'text-yellow-600' :
+                    booking.payment_status === 'failed' ? 'text-red-600' :
+                    'text-gray-600'
+                  }`}>
+                    {booking.payment_status === 'completed' ? '✓ Paid' :
+                     booking.payment_status === 'pending' ? '○ Pending' :
+                     booking.payment_status === 'failed' ? '✗ Failed' :
+                     'Not Required'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-gray-600">Created:</span>
                   <span className="font-medium">
                     {format(new Date(booking.created_at), 'MMM dd, yyyy')}
@@ -354,6 +368,15 @@ export function BookingDetail() {
 
             {/* Actions */}
             <div className="space-y-3 pt-4 border-t">
+              {/* Pay Now Button */}
+              {isHomeowner && booking.status === 'confirmed' && booking.payment_status !== 'completed' && (
+                <Link to={`/payment/${booking.id}`}>
+                  <Button variant="primary" fullWidth>
+                    Pay Now - €{booking.final_cost || booking.estimated_cost}
+                  </Button>
+                </Link>
+              )}
+
               {canStart && (
                 <Button onClick={handleStartWork} isLoading={isActionLoading} fullWidth>
                   Start Work

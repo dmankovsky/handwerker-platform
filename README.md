@@ -352,7 +352,7 @@ docker-compose logs --tail=100 app
 ### 🚧 Phase 3: Enhanced Features (In Progress)
 - ✅ Email notification system
 - ✅ Real-time notifications (WebSocket)
-- [ ] Multi-language support (German + English)
+- ✅ Multi-language support (German + English)
 - [ ] Frontend web application (React)
 - [ ] Mobile apps (React Native)
 - [ ] Calendar integration

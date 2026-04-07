@@ -4,13 +4,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/Layout';
 import { LoadingPage } from '@/components/common';
-import { Home, Login, Register } from '@/pages';
+import { Home, Login, Register, Search, CraftsmanProfile } from '@/pages';
 
 // Placeholder components for routes we'll implement next
-
-function Search() {
-  return <div>Search Craftsmen - Coming Soon</div>;
-}
 
 function Bookings() {
   return <div>Bookings - Coming Soon</div>;
@@ -85,6 +81,7 @@ function AppRoutes() {
           }
         />
         <Route path="/search" element={<Search />} />
+        <Route path="/craftsman/:id" element={<CraftsmanProfile />} />
         <Route
           path="/bookings"
           element={

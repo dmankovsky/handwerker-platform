@@ -3,3 +3,6 @@ export { Login } from './Login';
 export { Register } from './Register';
 export { Search } from './Search';
 export { CraftsmanProfile } from './CraftsmanProfile';
+export { Bookings } from './Bookings';
+export { BookingDetail } from './BookingDetail';
+export { CreateBooking } from './CreateBooking';

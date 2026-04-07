@@ -1,0 +1,141 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Layout } from '@/components/Layout';
+import { Home } from '@/pages/Home';
+
+// Placeholder components for routes we'll implement next
+function Login() {
+  return <div>Login Page - Coming Soon</div>;
+}
+
+function Register() {
+  return <div>Register Page - Coming Soon</div>;
+}
+
+function Search() {
+  return <div>Search Craftsmen - Coming Soon</div>;
+}
+
+function Bookings() {
+  return <div>Bookings - Coming Soon</div>;
+}
+
+function Messages() {
+  return <div>Messages - Coming Soon</div>;
+}
+
+function Profile() {
+  return <div>Profile - Coming Soon</div>;
+}
+
+function NotFound() {
+  return (
+    <div className="text-center py-16">
+      <h1 className="text-4xl font-bold text-gray-900 mb-4">404 - Page Not Found</h1>
+      <p className="text-gray-600">The page you're looking for doesn't exist.</p>
+    </div>
+  );
+}
+
+// Protected route component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="text-center py-16">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// Guest only route (login/register)
+function GuestRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="text-center py-16">Loading...</div>;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function AppRoutes() {
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <GuestRoute>
+              <Register />
+            </GuestRoute>
+          }
+        />
+        <Route path="/search" element={<Search />} />
+        <Route
+          path="/bookings"
+          element={
+            <ProtectedRoute>
+              <Bookings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Layout>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnHover
+        />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;

@@ -8,3 +8,4 @@ export { BookingDetail } from './BookingDetail';
 export { CreateBooking } from './CreateBooking';
 export { Messages } from './Messages';
 export { Profile } from './Profile';
+export { ReviewPage } from './ReviewPage';

@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/Layout';
 import { LoadingPage } from '@/components/common';
-import { Home, Login, Register, Search, CraftsmanProfile, Bookings, BookingDetail, CreateBooking, Messages, Profile } from '@/pages';
+import { Home, Login, Register, Search, CraftsmanProfile, Bookings, BookingDetail, CreateBooking, Messages, Profile, ReviewPage } from '@/pages';
 
 // Placeholder components for routes we'll implement next
 
@@ -91,6 +91,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <BookingDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bookings/:id/review"
+          element={
+            <ProtectedRoute>
+              <ReviewPage />
             </ProtectedRoute>
           }
         />

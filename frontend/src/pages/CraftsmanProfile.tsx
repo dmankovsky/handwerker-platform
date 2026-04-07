@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { api } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingPage, Button } from '@/components/common';
+import { ReviewCard } from '@/components/review';
 import type { CraftsmanProfile, Review } from '@/types';
 
 export function CraftsmanProfile() {
@@ -164,46 +165,15 @@ export function CraftsmanProfile() {
             {reviews.length > 0 ? (
               <div className="space-y-6">
                 {reviews.map((review) => (
-                  <div key={review.id} className="border-b border-gray-200 pb-6 last:border-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < review.rating ? 'text-yellow-400' : 'text-gray-300'
-                            }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-
-                    {review.comment && (
-                      <p className="text-gray-700 mb-2">{review.comment}</p>
-                    )}
-
-                    {/* Detailed Ratings */}
-                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                      <div>Quality: {review.quality_rating}/5</div>
-                      <div>Communication: {review.communication_rating}/5</div>
-                      <div>Punctuality: {review.punctuality_rating}/5</div>
-                      <div>Value: {review.value_rating}/5</div>
-                    </div>
-
-                    {review.response && (
-                      <div className="mt-3 pl-4 border-l-4 border-primary-200 bg-primary-50 p-3 rounded">
-                        <p className="text-sm font-semibold mb-1">Response from craftsman:</p>
-                        <p className="text-sm text-gray-700">{review.response}</p>
-                      </div>
-                    )}
-                  </div>
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    onResponseAdded={(updatedReview) => {
+                      setReviews(
+                        reviews.map((r) => (r.id === updatedReview.id ? updatedReview : r))
+                      );
+                    }}
+                  />
                 ))}
               </div>
             ) : (

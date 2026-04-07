@@ -7,13 +7,15 @@ import { api } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingPage, Button } from '@/components/common';
 import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';
-import type { Booking } from '@/types';
+import { ReviewCard } from '@/components/review';
+import type { Booking, Review } from '@/types';
 
 export function BookingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [review, setReview] = useState<Review | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -40,6 +42,19 @@ export function BookingDetail() {
     try {
       const data = await api.getBooking(parseInt(id!));
       setBooking(data);
+
+      // Load review if booking is completed
+      if (data.status === 'completed') {
+        try {
+          const reviews = await api.getCraftsmanReviews(data.craftsman.id);
+          const bookingReview = reviews.find((r: Review) => r.booking_id === data.id);
+          if (bookingReview) {
+            setReview(bookingReview);
+          }
+        } catch (error) {
+          console.error('Failed to load review:', error);
+        }
+      }
     } catch (error) {
       console.error('Failed to load booking:', error);
       toast.error('Failed to load booking');
@@ -299,6 +314,17 @@ export function BookingDetail() {
               </form>
             </div>
           )}
+
+          {/* Review Section */}
+          {review && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold">Your Review</h2>
+              <ReviewCard
+                review={review}
+                onResponseAdded={(updatedReview) => setReview(updatedReview)}
+              />
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -345,7 +371,7 @@ export function BookingDetail() {
                 </Button>
               )}
 
-              {booking.status === 'completed' && isHomeowner && (
+              {booking.status === 'completed' && isHomeowner && !review && (
                 <Link to={`/bookings/${booking.id}/review`}>
                   <Button variant="primary" fullWidth>
                     Leave Review

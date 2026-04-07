@@ -6,3 +6,5 @@ export { CraftsmanProfile } from './CraftsmanProfile';
 export { Bookings } from './Bookings';
 export { BookingDetail } from './BookingDetail';
 export { CreateBooking } from './CreateBooking';
+export { Messages } from './Messages';
+export { Profile } from './Profile';

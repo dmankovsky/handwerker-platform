@@ -4,17 +4,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/Layout';
 import { LoadingPage } from '@/components/common';
-import { Home, Login, Register, Search, CraftsmanProfile, Bookings, BookingDetail, CreateBooking } from '@/pages';
+import { Home, Login, Register, Search, CraftsmanProfile, Bookings, BookingDetail, CreateBooking, Messages, Profile } from '@/pages';
 
 // Placeholder components for routes we'll implement next
-
-function Messages() {
-  return <div>Messages - Coming Soon</div>;
-}
-
-function Profile() {
-  return <div>Profile - Coming Soon</div>;
-}
 
 function NotFound() {
   return (
